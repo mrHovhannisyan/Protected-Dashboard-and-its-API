@@ -16,4 +16,7 @@ def create_app(config_object='config.Config'):
     from app.routes.auth import bp as auth_bp
     app.register_blueprint(auth_bp)
 
+    from app.routes.score import bp as score_bp
+    app.register_blueprint(score_bp)
+
     return app
