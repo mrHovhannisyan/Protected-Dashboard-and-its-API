@@ -20,7 +20,7 @@ def login():
     user = User.query.filter_by(email=validated_data['email']).first()
 
     if not user or not user.check_password(validated_data['password']):
-        return {'errors': ['invalid credentials']}, HTTPStatus.FORBIDDEN
+        return {'errors': ['Invalid credentials']}, HTTPStatus.FORBIDDEN
 
     access_token = create_access_token(identity=str(user.id))
 
