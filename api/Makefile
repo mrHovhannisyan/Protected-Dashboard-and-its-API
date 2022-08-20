@@ -4,6 +4,14 @@
 test: ## Run tests
 	venv/bin/python -m unittest discover
 
+.PHONY: coverage
+coverage: ## Run tests with coverage
+	venv/bin/coverage run --branch -m unittest discover
+
+.PHONY: coverage-html
+coverage-html: coverage ## Generate html coverage files from .coverage
+	venv/bin/python -m coverage html
+
 .PHONY: check
 check: ## Check code with flake8
 	venv/bin/python -m flake8

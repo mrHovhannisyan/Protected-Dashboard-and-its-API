@@ -1,6 +1,6 @@
 from flask import Flask
 
-from app import models
+from app import models  # noqa
 from app.extensions.database import db, migrate
 from app.extensions.security import jwt
 

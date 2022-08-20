@@ -29,7 +29,7 @@ class UserLoginTestCase(FunctionalTestCase):
         self.assertIn('password', response.json['errors'].keys())
 
     def test_login_returns_error_with_invalid_password(self):
-        response = client.post('/auth/login', json={
+        response = self.client.post('/auth/login', json={
             "email": "john@example.com",
             'password': 'wrong-password'
         })
