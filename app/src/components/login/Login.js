@@ -31,14 +31,12 @@ export default function Login({ setToken }) {
     const [password, setPassword] = useState();
 
     const handleSubmit = async event => {
-        console.log(event)
         event.preventDefault();
         const token = await loginUser({
             email,
             password
         });
-        // console.log(token['access_token']);
-        setToken(token['access_token']);
+        setToken(token);
     };
 
     return (

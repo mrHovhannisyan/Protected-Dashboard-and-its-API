@@ -1,10 +1,13 @@
 import React, {useState} from 'react';
+
 import './App.css';
 import Login from "./components/login/Login";
 import Dashboard from "./components/dashboard/Dashboard";
+import useToken from "./components/app/useToken";
+
 
 function App() {
-    const [token, setToken] = useState();
+    const {token, setToken} = useToken();
 
     return (
         <div className="App">
