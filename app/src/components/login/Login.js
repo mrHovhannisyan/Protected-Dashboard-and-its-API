@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {useState} from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -10,19 +11,34 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
+import PropTypes from 'prop-types';
 
 const theme = createTheme();
 
-export default function SignIn() {
+async function loginUser(credentials) {
+    return fetch('http://localhost:5000/auth/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(credentials)
+    })
+        .then(data => data.json())
+}
 
-    const handleSubmit = (event) => {
+export default function Login({ setToken }) {
+    const [email, setEmail] = useState();
+    const [password, setPassword] = useState();
+
+    const handleSubmit = async event => {
+        console.log(event)
         event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        // eslint-disable-next-line no-console
-        console.log({
-            email: data.get('email'),
-            password: data.get('password'),
+        const token = await loginUser({
+            email,
+            password
         });
+        // console.log(token['access_token']);
+        setToken(token['access_token']);
     };
 
     return (
@@ -53,6 +69,7 @@ export default function SignIn() {
                             name="email"
                             autoComplete="email"
                             autoFocus
+                            onChange={event => setEmail(event.target.value)}
                         />
                         <TextField
                             margin="normal"
@@ -63,6 +80,7 @@ export default function SignIn() {
                             type="password"
                             id="password"
                             autoComplete="current-password"
+                            onChange={event => setPassword(event.target.value)}
                         />
                         <FormControlLabel
                             control={<Checkbox value="remember" color="primary" />}
@@ -81,4 +99,8 @@ export default function SignIn() {
             </Container>
         </ThemeProvider>
     );
+
+    Login.propTypes = {
+        setToken: PropTypes.func.isRequired
+    }
 }
