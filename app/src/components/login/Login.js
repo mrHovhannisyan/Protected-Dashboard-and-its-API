@@ -13,19 +13,10 @@ import Container from '@mui/material/Container';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import {Alert, Stack} from "@mui/material";
+import {loginUser} from "../services/api";
 
 const theme = createTheme();
 
-async function loginUser(credentials) {
-    return fetch('http://localhost:5000/auth/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(credentials)
-    })
-        .then(data => data.json())
-}
 
 export default function Login({ setToken }) {
     const [email, setEmail] = useState();

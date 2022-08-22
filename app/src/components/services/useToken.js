@@ -9,6 +9,11 @@ export default function useToken() {
 
     const [token, setToken] = useState(getToken());
 
+    const removeToken = () => {
+        sessionStorage.removeItem('token');
+        window.location.href = '/';
+    };
+
     const saveToken = userToken => {
         sessionStorage.setItem('token', JSON.stringify(userToken));
         setToken(userToken.access_token);
@@ -16,6 +21,7 @@ export default function useToken() {
 
     return {
         setToken: saveToken,
+        removeToken,
         token
     };
 }

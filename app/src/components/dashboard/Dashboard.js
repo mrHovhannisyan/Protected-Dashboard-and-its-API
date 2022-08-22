@@ -22,6 +22,9 @@ import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Link from "@mui/material/Link";
+import useToken from "../services/useToken";
+import {useEffect, useState} from "react";
+import {getUserScore} from "../services/api";
 
 function Copyright(props) {
     return (
@@ -38,10 +41,6 @@ function Copyright(props) {
 
 const drawerWidth = 240;
 
-const logout = () => {
-    sessionStorage.removeItem('token');
-    window.location.href = '/';
-}
 
 const AppBar = styled(MuiAppBar, {
     shouldForwardProp: (prop) => prop !== 'open',
@@ -73,6 +72,17 @@ const DrawerHeader = styled('div')(({theme}) => ({
 function DashboardContent() {
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
+    const {token,removeToken} = useToken();
+    const [score, setScore] = useState(null)
+
+    const getUserData = async (token) => {
+        const resposne = await getUserScore(token);
+        !resposne.data ? removeToken() : setScore(resposne.data['result'])
+    }
+
+    useEffect(() => {
+        getUserData(token)
+    }, [token])
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -130,7 +140,7 @@ function DashboardContent() {
                         </ListItemButton>
                     </ListItem>
                     <ListItem disablePadding>
-                        <ListItemButton onClick={logout}>
+                        <ListItemButton onClick={()=>removeToken()}>
                             <ListItemIcon>
                                 <LogoutIcon/>
                             </ListItemIcon>
@@ -154,21 +164,25 @@ function DashboardContent() {
                 <Toolbar/>
                 <Container maxWidth="lg" sx={{mt: 4, mb: 4}}>
                     <Card sx={{minWidth: 275}}>
-                        <CardContent>
-                            <Typography sx={{fontSize: 16, fontWeight: 'Bold'}} style={{color: '#1976d2'}}
-                                        gutterBottom>
-                                Exam result
-                            </Typography>
-                            <Typography sx={{mb: 1.5}} color="text.secondary">
-                                Your score is
-                            </Typography>
-                            <Typography variant="h5" component="div">
-                                {9} of 10
-                            </Typography>
-                            <Typography sx={{mb: 1.5}} color="text.secondary">
-                                PASSED
-                            </Typography>
-                        </CardContent>
+                        {score ? (
+                            <CardContent>
+                                <Typography sx={{fontSize: 16, fontWeight: 'Bold'}} style={{color: '#1976d2'}}
+                                            gutterBottom>
+                                    Exam result
+                                </Typography>
+                                <Typography sx={{mb: 1.5}} color="text.secondary">
+                                    Your score is
+                                </Typography>
+                                <Typography variant="h5" component="div">
+                                    {score} of 10
+                                </Typography>
+                                <Typography sx={{mb: 1.5}} color="text.secondary">
+                                    PASSED
+                                </Typography>
+                            </CardContent>
+                        ):
+                            <h3>Oops! Something went wrong</h3>
+                        }
                     </Card>
                     <Copyright sx={{pt: 4}}/>
                 </Container>
