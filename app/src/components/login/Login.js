@@ -12,6 +12,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
 import PropTypes from 'prop-types';
+import {Alert, Stack} from "@mui/material";
 
 const theme = createTheme();
 
@@ -29,14 +30,21 @@ async function loginUser(credentials) {
 export default function Login({ setToken }) {
     const [email, setEmail] = useState();
     const [password, setPassword] = useState();
+    const [errorMessage, setErrorMessage] = useState({
+        email: '',
+        password: '',
+    });
 
     const handleSubmit = async event => {
         event.preventDefault();
-        const token = await loginUser({
+        const response = await loginUser({
             email,
             password
         });
-        setToken(token);
+        if (response.errors) {
+            setErrorMessage(response.errors);
+        }
+        setToken(response);
     };
 
     return (
@@ -68,6 +76,8 @@ export default function Login({ setToken }) {
                             autoComplete="email"
                             autoFocus
                             onChange={event => setEmail(event.target.value)}
+                            error={!!errorMessage?.email}
+                            helperText={errorMessage?.email ? errorMessage.email[0] : null}
                         />
                         <TextField
                             margin="normal"
@@ -79,6 +89,8 @@ export default function Login({ setToken }) {
                             id="password"
                             autoComplete="current-password"
                             onChange={event => setPassword(event.target.value)}
+                            error={!!errorMessage?.password}
+                            helperText={errorMessage?.password ? errorMessage.password[0] : null}
                         />
                         <FormControlLabel
                             control={<Checkbox value="remember" color="primary" />}
@@ -92,6 +104,11 @@ export default function Login({ setToken }) {
                         >
                             Sign In
                         </Button>
+                        {errorMessage &&  errorMessage[0] &&
+                            <Stack sx={{ width: '100%' }} spacing={2}>
+                                <Alert severity="error">{errorMessage[0]}</Alert>
+                            </Stack>
+                        }
                     </Box>
                 </Box>
             </Container>
