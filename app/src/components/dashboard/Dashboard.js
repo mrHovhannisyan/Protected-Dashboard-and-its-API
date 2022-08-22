@@ -1,19 +1,30 @@
 import * as React from 'react';
-import {createTheme, styled, ThemeProvider} from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import MuiDrawer from '@mui/material/Drawer';
+import {styled, useTheme} from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
+import Drawer from '@mui/material/Drawer';
+import CssBaseline from '@mui/material/CssBaseline';
 import MuiAppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
+import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import Container from '@mui/material/Container';
-import Link from '@mui/material/Link';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import InboxIcon from '@mui/icons-material/MoveToInbox';
+import LogoutIcon from '@mui/icons-material/Logout';
+import Container from "@mui/material/Container";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Link from "@mui/material/Link";
+import useToken from "../services/useToken";
+import {useEffect, useState} from "react";
+import {getUserScore} from "../services/api";
 
 function Copyright(props) {
     return (
@@ -28,7 +39,8 @@ function Copyright(props) {
     );
 }
 
-const drawerWidth = 0;
+const drawerWidth = 240;
+
 
 const AppBar = styled(MuiAppBar, {
     shouldForwardProp: (prop) => prop !== 'open',
@@ -48,102 +60,111 @@ const AppBar = styled(MuiAppBar, {
     }),
 }));
 
-const Drawer = styled(MuiDrawer, {shouldForwardProp: (prop) => prop !== 'open'})(
-    ({theme, open}) => ({
-        '& .MuiDrawer-paper': {
-            position: 'relative',
-            whiteSpace: 'nowrap',
-            width: drawerWidth,
-            transition: theme.transitions.create('width', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen,
-            }),
-            boxSizing: 'border-box',
-            ...(!open && {
-                overflowX: 'hidden',
-                transition: theme.transitions.create('width', {
-                    easing: theme.transitions.easing.sharp,
-                    duration: theme.transitions.duration.leavingScreen,
-                }),
-                width: theme.spacing(7),
-                [theme.breakpoints.up('sm')]: {
-                    width: theme.spacing(9),
-                },
-            }),
-        },
-    }),
-);
-
-const mdTheme = createTheme();
+const DrawerHeader = styled('div')(({theme}) => ({
+    display: 'flex',
+    alignItems: 'center',
+    padding: theme.spacing(0, 1),
+    // necessary for content to be below app bar
+    ...theme.mixins.toolbar,
+    justifyContent: 'flex-end',
+}));
 
 function DashboardContent() {
-    const [open, setOpen] = React.useState(true);
-    const toggleDrawer = () => {
-        setOpen(!open);
+    const theme = useTheme();
+    const [open, setOpen] = React.useState(false);
+    const {token,removeToken} = useToken();
+    const [score, setScore] = useState(null)
+
+    const getUserData = async (token) => {
+        const resposne = await getUserScore(token);
+        !resposne.data ? removeToken() : setScore(resposne.data['result'])
+    }
+
+    useEffect(() => {
+        getUserData(token)
+    }, [token])
+
+    const handleDrawerOpen = () => {
+        setOpen(true);
+    };
+
+    const handleDrawerClose = () => {
+        setOpen(false);
     };
 
     return (
-        <ThemeProvider theme={mdTheme}>
-            <Box sx={{display: 'flex'}}>
-                <CssBaseline/>
-                <AppBar position="absolute" open={open}>
-                    <Toolbar
-                        sx={{
-                            pr: '24px', // keep right padding when drawer closed
-                        }}
+        <Box sx={{display: 'flex'}}>
+            <CssBaseline/>
+            <AppBar position="fixed" open={open}>
+                <Toolbar>
+                    <IconButton
+                        color="inherit"
+                        aria-label="open drawer"
+                        onClick={handleDrawerOpen}
+                        edge="start"
+                        sx={{mr: 2, ...(open && {display: 'none'})}}
                     >
-                        <IconButton
-                            edge="start"
-                            color="inherit"
-                            aria-label="open drawer"
-                            onClick={toggleDrawer}
-                            sx={{
-                                marginRight: '36px',
-                                ...(open && {display: 'none'}),
-                            }}
-                        >
-                            <MenuIcon/>
-                        </IconButton>
-                        <Typography
-                            component="h1"
-                            variant="h6"
-                            color="inherit"
-                            noWrap
-                            sx={{flexGrow: 1}}
-                        >
-                            Dashboard
-                        </Typography>
-                    </Toolbar>
-                </AppBar>
-                <Drawer variant="permanent" open={open}>
-                    <Toolbar
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-end',
-                            px: [1],
-                        }}
-                    >
-                        <IconButton onClick={toggleDrawer}>
-                            <ChevronLeftIcon/>
-                        </IconButton>
-                    </Toolbar>
-                </Drawer>
-                <Box
-                    component="main"
-                    sx={{
-                        backgroundColor: (theme) =>
-                            theme.palette.mode === 'light'
-                                ? theme.palette.grey[100]
-                                : theme.palette.grey[900],
-                        flexGrow: 1,
-                        height: '100vh',
-                        overflow: 'auto',
-                    }}
-                >
-                    <Toolbar/>
-                    <Container maxWidth="lg" sx={{mt: 4, mb: 4}}>
-                        <Card sx={{minWidth: 275}}>
+                        <MenuIcon/>
+                    </IconButton>
+                    <Typography variant="h6" noWrap component="div">
+                        Dashboard
+                    </Typography>
+                </Toolbar>
+            </AppBar>
+            <Drawer
+                sx={{
+                    width: 0,
+                    flexShrink: 0,
+                    '& .MuiDrawer-paper': {
+                        width: drawerWidth,
+                        boxSizing: 'border-box',
+                    },
+                }}
+                variant="persistent"
+                anchor="left"
+                open={open}
+            >
+                <DrawerHeader>
+                    <IconButton onClick={handleDrawerClose}>
+                        {theme.direction === 'ltr' ? <ChevronLeftIcon/> : <ChevronRightIcon/>}
+                    </IconButton>
+                </DrawerHeader>
+                <Divider/>
+                <List>
+                    <ListItem disablePadding>
+                        <ListItemButton>
+                            <ListItemIcon>
+                                <InboxIcon/>
+                            </ListItemIcon>
+                            <ListItemText primary="Inbox"/>
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={()=>removeToken()}>
+                            <ListItemIcon>
+                                <LogoutIcon/>
+                            </ListItemIcon>
+                            <ListItemText primary="Logout"/>
+                        </ListItemButton>
+                    </ListItem>
+                </List>
+            </Drawer>
+            <Box
+                component="main"
+                sx={{
+                    backgroundColor: (theme) =>
+                        theme.palette.mode === 'light'
+                            ? theme.palette.grey[100]
+                            : theme.palette.grey[900],
+                    flexGrow: 1,
+                    height: '100vh',
+                    overflow: 'auto',
+                }}
+            >
+                <Toolbar/>
+                <Container maxWidth="lg" sx={{mt: 4, mb: 4}}>
+                    <Card sx={{minWidth: 275}}>
+                        {score ? (
                             <CardContent>
                                 <Typography sx={{fontSize: 16, fontWeight: 'Bold'}} style={{color: '#1976d2'}}
                                             gutterBottom>
@@ -153,18 +174,20 @@ function DashboardContent() {
                                     Your score is
                                 </Typography>
                                 <Typography variant="h5" component="div">
-                                    {9} of 10
+                                    {score} of 10
                                 </Typography>
                                 <Typography sx={{mb: 1.5}} color="text.secondary">
                                     PASSED
                                 </Typography>
                             </CardContent>
-                        </Card>
-                        <Copyright sx={{pt: 4}}/>
-                    </Container>
-                </Box>
+                        ):
+                            <h3>Oops! Something went wrong</h3>
+                        }
+                    </Card>
+                    <Copyright sx={{pt: 4}}/>
+                </Container>
             </Box>
-        </ThemeProvider>
+        </Box>
     );
 }
 

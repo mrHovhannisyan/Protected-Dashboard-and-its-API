@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {useState} from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -10,19 +11,31 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
+import PropTypes from 'prop-types';
+import {Alert, Stack} from "@mui/material";
+import {loginUser} from "../services/api";
 
 const theme = createTheme();
 
-export default function SignIn() {
 
-    const handleSubmit = (event) => {
+export default function Login({ setToken }) {
+    const [email, setEmail] = useState();
+    const [password, setPassword] = useState();
+    const [errorMessage, setErrorMessage] = useState({
+        email: '',
+        password: '',
+    });
+
+    const handleSubmit = async event => {
         event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        // eslint-disable-next-line no-console
-        console.log({
-            email: data.get('email'),
-            password: data.get('password'),
+        const response = await loginUser({
+            email,
+            password
         });
+        if (response.errors) {
+            setErrorMessage(response.errors);
+        }
+        setToken(response);
     };
 
     return (
@@ -53,6 +66,9 @@ export default function SignIn() {
                             name="email"
                             autoComplete="email"
                             autoFocus
+                            onChange={event => setEmail(event.target.value)}
+                            error={!!errorMessage?.email}
+                            helperText={errorMessage?.email ? errorMessage.email[0] : null}
                         />
                         <TextField
                             margin="normal"
@@ -63,6 +79,9 @@ export default function SignIn() {
                             type="password"
                             id="password"
                             autoComplete="current-password"
+                            onChange={event => setPassword(event.target.value)}
+                            error={!!errorMessage?.password}
+                            helperText={errorMessage?.password ? errorMessage.password[0] : null}
                         />
                         <FormControlLabel
                             control={<Checkbox value="remember" color="primary" />}
@@ -76,9 +95,18 @@ export default function SignIn() {
                         >
                             Sign In
                         </Button>
+                        {errorMessage &&  errorMessage[0] &&
+                            <Stack sx={{ width: '100%' }} spacing={2}>
+                                <Alert severity="error">{errorMessage[0]}</Alert>
+                            </Stack>
+                        }
                     </Box>
                 </Box>
             </Container>
         </ThemeProvider>
     );
+
+    Login.propTypes = {
+        setToken: PropTypes.func.isRequired
+    }
 }
